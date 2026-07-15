@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from app.main import app, HealthCheckResponse
-
+from unittest.mock import patch
 
 client = TestClient(app)
 
@@ -25,3 +25,12 @@ def test_health_check():
     response = client.get('/health-check')
     assert response.status_code == 200
     response.json() == {"message": "Healthy"}
+
+@patch("app.main.sleep")
+def test_simulate_load(mock_sleep):
+    response = client.get("/load")
+
+    assert response.status_code == 200
+    assert "handled_by" in response.json()
+
+    mock_sleep.assert_called_once_with(15)
